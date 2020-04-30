@@ -25,7 +25,7 @@ module "deploy" {
   ]
   volume_mount = [
     {
-      mount_path = "/var/lib/postgresql/data"
+      mount_path = var.mount_path
       sub_path = "${local.namespace}/data"
       volume_name = var.app_name
     }

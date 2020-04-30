@@ -33,6 +33,10 @@ variable "custom_envs" {
   description = "(Required) true or fasle if true then for call module should be specified env vars"
   default = false
 }
+variable "envs" {
+  description = "(Optional) Can be overriden default env vars if custom_envs=true"
+  default = []
+}
 variable "db_password" {
   description = "(Default) must be overriden by custom password"
   default = "SuperSecurePassword012!"
@@ -50,7 +54,7 @@ variable "image" {
 locals {
   image = "postgres:12"
   namespace = var.create_namespace == true ? "postgres" : var.namespace
-  env = var.custom_envs == true ? null : [
+  env = var.custom_envs == true ? var.envs : [
     {
       name = "POSTGRES_DB"
       value = "postgres"
@@ -68,4 +72,7 @@ locals {
       value = "postgres"
     }
   ]
+}
+variable "mount_path" {
+  default = ""
 }

@@ -17,9 +17,9 @@ variable "ports" {
     }
   ]
 }
-variable "nfs_endpoint" {}
-variable "nfs_path" {
-  default = "/"
+variable "service_type" {
+  description = "(Optional) service, available types ClusterIP, LoadBalancer, default type == NodePort"
+  default = "NodePort"
 }
 variable "volume_config_map" {
   description = "(Optional) Create ConfigMap volume"
@@ -29,12 +29,8 @@ variable "volume_host_path" {
   description = "(Optional) Create HostPath volume"
   default = []
 }
-variable "custom_envs" {
-  description = "(Required) true or fasle if true then for call module should be specified env vars"
-  default = false
-}
 variable "envs" {
-  description = "(Optional) Can be overriden default env vars if custom_envs=true"
+  description = "(Optional) Can be overriden default env vars"
   default = []
 }
 variable "db_password" {
@@ -42,19 +38,16 @@ variable "db_password" {
   default = "SuperSecurePassword012!"
 }
 variable "namespace" {
-  default = ""
-}
-variable "custom_image" {
-  description = "(Required) true or fasle if true then for call module should be specified image with tag"
-  default = false
+  description = "(Optional) It's used in order to specify name of creating namespace or if 'createnamespace = false' name of existing namespace"
+  default = "postgres"
 }
 variable "image" {
-  default = ""
+  description = "(Optional) Uses if needed to specify custom image"
+  default = null
 }
 locals {
-  image = "postgres:12"
-  namespace = var.create_namespace == true ? "postgres" : var.namespace
-  env = var.custom_envs == true ? var.envs : [
+  image = var.image == null ? "postgres:12.2" : var.image
+  env = var.envs == [] ? [
     {
       name = "POSTGRES_DB"
       value = "postgres"
@@ -65,14 +58,43 @@ locals {
     },
     {
       name = "POSTGRES_PASSWORD"
-      value = var.custom_envs == true ? null : var.db_password
+      value = var.db_password
     },
     {
       name = "POSTGRES_USER"
       value = "postgres"
     }
-  ]
+  ] : var.envs
+  volume_nfs = var.volume_nfs == null ? [
+    {
+      path_on_nfs = var.nfs_path
+      nfs_endpoint = var.nfs_endpoint
+      volume_name = var.app_name
+    }
+  ] : var.volume_nfs
+
+  volume_mount = var.volume_mount == null ? [
+    {
+      mount_path = var.mount_path
+      sub_path = "${var.namespace}/${var.app_name}/data"
+      volume_name = var.app_name
+    }
+  ] : var.volume_mount
 }
 variable "mount_path" {
-  default = ""
+  description = "(Optional) If specified then will be overriden and used custom mount path"
+  default = "/var/lib/postgresql/data"
+}
+variable "volume_nfs" {
+  description = "(Optional) Uses if needed to specify custom nfs volume"
+  default = null
+}
+variable "volume_mount" {
+  description = "(Optional) Uses if needed to specify custom volume mount"
+  default = null
+}
+variable "nfs_endpoint" {}
+variable "nfs_path" {
+  description = "(Optional) works with default mount path"
+  default = "/"
 }

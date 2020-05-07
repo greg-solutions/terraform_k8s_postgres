@@ -9,7 +9,7 @@ resource "kubernetes_namespace" "namespace" {
 }
 
 module "deploy" {
-  source = "git::https://github.com/greg-solutions/terraform_k8s_deploy.git"
+  source = "git::https://github.com/greg-solutions/terraform_k8s_statefulset.git"
   name = var.app_name
   namespace = var.create_namespace == true ? kubernetes_namespace.namespace[0].id : var.namespace
   image = local.image

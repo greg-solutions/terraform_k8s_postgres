@@ -16,6 +16,8 @@ module "deploy" {
   internal_port = var.ports
   volume_host_path = var.volume_host_path
   volume_config_map = var.volume_config_map
+  volume_nfs = local.volume_nfs
+  volume_mount = local.volume_mount
   env = local.env
 }
 
